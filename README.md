@@ -32,7 +32,7 @@ npm run build
 
 This produces `prolink-extension-1.0.0.ablx`. Load it via Ableton's Extensions panel.
 
-> **Beat Link API JAR**: The build copies `beat-link-api-standalone.jar` from `~/development/beat-link-dashboard/api-server/target/uberjar/` or `~/development/dj-set-capture/api-server/target/uberjar/` into the bundle. If neither path exists, the auto-launch feature is unavailable and the JAR must be started manually before capture.
+> **Beat Link API JAR**: The pre-built JAR is vendored at `vendor/beat-link-api.jar` and is bundled automatically into the `.ablx`. No external dependency required.
 
 ## Usage
 

@@ -3,16 +3,12 @@ import { join } from "node:path";
 import { existsSync } from "node:fs";
 
 // Locations to search for the beat-link-api JAR, in priority order.
-// The first entry is the bundled copy (inside the .ablx alongside extension.js).
 function candidateJarPaths(): string[] {
   const paths: string[] = [];
-  // Bundled copy — added to the .ablx package by build.ts
+  // Bundled copy — inside the .ablx alongside extension.js
   try { paths.push(join(__dirname, "beat-link-api.jar")); } catch (_) {}
-  // Developer local paths (fallback when running unbundled)
-  const home = process.env.USERPROFILE ?? process.env.HOME ?? "";
-  const dev  = join(home, "development");
-  paths.push(join(dev, "beat-link-dashboard", "api-server", "target", "uberjar", "beat-link-api-standalone.jar"));
-  paths.push(join(dev, "dj-set-capture",      "api-server", "target", "uberjar", "beat-link-api-standalone.jar"));
+  // Repo vendor directory (dev mode: __dirname is dist/, vendor/ is one level up)
+  try { paths.push(join(__dirname, "..", "vendor", "beat-link-api.jar")); } catch (_) {}
   return paths;
 }
 

@@ -39,7 +39,7 @@ The extension has two Pioneer event sources that run simultaneously:
 | **prolink-connect** | `listener.ts` | Direct UDP; used when Beat Link Trigger is NOT running. Provides on-air, pitch, loop, master-change events + remote DB metadata queries. |
 | **Beat Link API poller** | `beatLinkPoller.ts` | HTTP polling (`localhost:17081/params.json`) every 200 ms. Primary source when Beat Link Trigger IS running (it occupies the same UDP ports). Also supplements metadata in prolink-connect mode. |
 
-`beatLinkLauncher.ts` auto-launches the bundled `beat-link-api.jar` (copied from developer paths at build time into `dist/`).
+`beatLinkLauncher.ts` auto-launches the bundled `beat-link-api.jar`. The JAR is vendored at `vendor/beat-link-api.jar`; `build.ts` copies it to `dist/` and packages it into the `.ablx`.
 
 `network.ts` wraps `prolink-connect`'s `bringOnline()` with autoconfig-from-peers (8 s timeout) and manual LAN interface fallback.
 

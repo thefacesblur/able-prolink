@@ -32,10 +32,8 @@ const options: esbuild.BuildOptions = {
   },
 };
 
-// Beat Link API JAR — searched in order, first found wins
 const JAR_CANDIDATES = [
-  path.resolve(process.env.USERPROFILE ?? "", "development", "beat-link-dashboard", "api-server", "target", "uberjar", "beat-link-api-standalone.jar"),
-  path.resolve(process.env.USERPROFILE ?? "", "development", "dj-set-capture",      "api-server", "target", "uberjar", "beat-link-api-standalone.jar"),
+  path.resolve("vendor", "beat-link-api.jar"),
 ];
 
 if (watch) {
