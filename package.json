@@ -1,0 +1,36 @@
+{
+  "name": "prolink-extension",
+  "version": "1.0.0",
+  "main": "dist/extension.js",
+  "engines": {
+    "node": ">=24.14.1"
+  },
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit && tsx build.ts --production",
+    "build:dev": "tsc --noEmit && tsx build.ts",
+    "start": "npm run build:dev && extensions-cli run",
+    "watch": "npm run build:dev && (npm run build:dev -- --watch & extensions-cli run)",
+    "package": "tsx build.ts --production",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@ableton-extensions/sdk": "file:./vendor/ableton-extensions-sdk-1.0.0-beta.0.tgz",
+    "prolink-connect": "^0.11.0",
+    "sql.js": "^1.14.1"
+  },
+  "devDependencies": {
+    "@ableton-extensions/cli": "file:./vendor/ableton-extensions-cli-1.0.0-beta.0.tgz",
+    "@types/adm-zip": "^0.5.8",
+    "@types/archiver": "^8.0.0",
+    "@types/node": "^24.1.0",
+    "adm-zip": "^0.5.17",
+    "archiver": "^8.0.0",
+    "esbuild": "0.28.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.9.3",
+    "vite": "^6.0.0",
+    "vitest": "^4.1.8"
+  }
+}

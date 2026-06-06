@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ProLink Capture</title>
+  <style>
+    :root {
+      --bg: #2C2C2C;
+      --panel: #383838;
+      --surface: #4E4E4E;
+      --accent: #FFA500;
+      --text: #FFFFFF;
+      --muted: #999999;
+      --on-air: #FF4444;
+      --border: #1A1A1A;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 13px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 { font-size: 14px; font-weight: 600; letter-spacing: 0.5px; }
+    #timer { color: var(--accent); font-variant-numeric: tabular-nums; font-size: 13px; }
+    #connection {
+      padding: 6px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--muted);
+    }
+    #decks {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+    }
+    .deck {
+      background: var(--panel);
+      padding: 14px 16px;
+    }
+    .deck-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .deck-label { font-weight: 700; font-size: 12px; letter-spacing: 1px; color: var(--muted); }
+    .on-air-badge {
+      background: var(--on-air);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 2px 6px;
+      border-radius: 2px;
+      display: none;
+    }
+    .on-air-badge.visible { display: inline-block; }
+    .track-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .track-artist { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+    .bpm-row { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+    .bpm { font-variant-numeric: tabular-nums; color: var(--accent); }
+    .master-badge { font-size: 10px; color: var(--accent); }
+    footer {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      background: var(--panel);
+      display: flex;
+      justify-content: flex-end;
+    }
+    button {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 7px 18px;
+      font-size: 13px;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+    button:hover { background: #5E5E5E; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ProLink Capture</h1>
+    <span id="timer">● 00:00:00</span>
+  </header>
+  <div id="connection">Connecting…</div>
+  <div id="decks">
+    <div class="deck" id="deck-1">
+      <div class="deck-header">
+        <span class="deck-label">DECK 1</span>
+        <span class="on-air-badge">ON AIR</span>
+      </div>
+      <div class="track-title">—</div>
+      <div class="track-artist">—</div>
+      <div class="bpm-row"><span class="bpm">—</span> BPM <span class="master-badge"></span></div>
+    </div>
+    <div class="deck" id="deck-2">
+      <div class="deck-header">
+        <span class="deck-label">DECK 2</span>
+        <span class="on-air-badge">ON AIR</span>
+      </div>
+      <div class="track-title">—</div>
+      <div class="track-artist">—</div>
+      <div class="bpm-row"><span class="bpm">—</span> BPM <span class="master-badge"></span></div>
+    </div>
+  </div>
+  <footer>
+    <button id="stop-btn" onclick="stopCapture()">Stop Capture</button>
+  </footer>
+
+  <script>
+    const SSE_PORT = __SSE_PORT__;
+    const isWebKit = typeof window !== 'undefined' && window.webkit?.messageHandlers?.live;
+    const isWebView2 = typeof window !== 'undefined' && window.chrome?.webview;
+
+    function sendMessage(msg) {
+      if (isWebKit) {
+        window.webkit.messageHandlers.live.postMessage(msg);
+      } else if (isWebView2) {
+        window.chrome.webview.postMessage(msg);
+      }
+    }
+
+    function stopCapture() {
+      sendMessage({ method: 'close_and_send', params: [JSON.stringify({ type: 'STOP_CAPTURE' })] });
+    }
+
+    function pad(n) { return String(Math.floor(n)).padStart(2, '0'); }
+
+    function formatMs(ms) {
+      const s = ms / 1000;
+      return `${pad(s / 3600)}:${pad((s % 3600) / 60)}:${pad(s % 60)}`;
+    }
+
+    function updateDeck(id, deck) {
+      const el = document.getElementById(`deck-${id}`);
+      if (!el) return;
+      el.querySelector('.on-air-badge').classList.toggle('visible', deck.isOnAir);
+      el.querySelector('.track-title').textContent = deck.title || '—';
+      el.querySelector('.track-artist').textContent = deck.artist || '—';
+      el.querySelector('.bpm').textContent = deck.adjustedBPM ? deck.adjustedBPM.toFixed(1) : '—';
+      el.querySelector('.master-badge').textContent = deck.isMaster ? '★' : '';
+    }
+
+    const es = new EventSource(`http://127.0.0.1:${SSE_PORT}/events`);
+    es.onmessage = (e) => {
+      const state = JSON.parse(e.data);
+      document.getElementById('timer').textContent = `● ${formatMs(state.sessionMs)}`;
+      document.getElementById('connection').textContent =
+        state.connection === 'connected' ? `Connected — XDJ (${Object.keys(state.decks).length} players)` :
+        state.connection === 'failed' ? 'Connection failed' : 'Connecting…';
+      Object.entries(state.decks).forEach(([id, deck]) => updateDeck(id, deck));
+    };
+    es.onerror = () => {
+      document.getElementById('connection').textContent = 'Lost connection to extension';
+    };
+  </script>
+</body>
+</html>

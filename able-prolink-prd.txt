@@ -1,0 +1,260 @@
+# Product Requirements Document
+
+# Product Name
+
+Ableton ProLink Extension
+
+# Vision
+
+Capture every meaningful action performed on Pioneer DJ equipment and automatically recreate the performance inside Ableton Live as a structured, editable project.
+
+# Problem
+
+After a DJ performance, valuable information is lost:
+
+* Track order
+* Transition timing
+* Cue usage
+* Loops
+* Performance decisions
+* Energy flow
+
+DJs often want to:
+
+* Analyze their sets
+* Re-edit recordings
+* Create mashups
+* Build studio versions
+* Generate content
+
+Current workflows are manual and time-consuming.
+
+# Core Value Proposition
+
+Press Record.
+
+Perform your DJ set.
+
+Open Ableton.
+
+The entire performance appears as an editable project timeline.
+
+# Users
+
+Primary:
+
+* Club DJs
+* Festival DJs
+* Open format DJs
+* Producer/DJs
+
+Secondary:
+
+* Music educators
+* Event production teams
+* Content creators
+* Label teams
+
+# MVP
+
+## Live Capture
+
+Capture:
+
+* Deck loaded track
+* Deck unload
+* BPM
+* Master deck changes
+* Play state
+* Pause state
+* Cue trigger
+* Hot cue trigger
+* Loop start
+* Loop end
+* Loop length
+
+## Timeline Reconstruction
+
+Generate:
+
+* Chronological event timeline
+* Deck activity tracks
+* Transition markers
+* Track start markers
+* Track end markers
+
+## Ableton Integration
+
+Create:
+
+* Arrangement markers
+* Tempo automation
+* Locator markers
+* Text annotations
+
+Example:
+
+00:00 Intro
+02:15 Track Loaded
+03:04 Transition Begins
+04:12 Hot Cue A
+04:25 Loop 8 Beats
+05:47 Drop
+
+## Performance Notes
+
+Auto-generated notes:
+
+Track:
+Fisher - Losing It
+
+Played:
+04:12
+
+Duration:
+03:40
+
+Loops Used:
+2
+
+Hot Cues Used:
+4
+
+# System Architecture
+
+## Layer 1
+
+Pioneer Integration Service
+
+Responsibilities:
+
+* Device discovery
+* Network subscriptions
+* Packet decoding
+* Metadata retrieval
+
+## Layer 2
+
+Event Recorder
+
+Stores immutable events.
+
+Example:
+
+{
+timestamp: 123456789,
+deck: 1,
+type: "HOT_CUE_TRIGGER",
+cue: "A"
+}
+
+## Layer 3
+
+Timeline Engine
+
+Transforms raw events into:
+
+* Sessions
+* Transitions
+* Sections
+* Performance summaries
+
+## Layer 4
+
+Ableton Extension
+
+Responsibilities:
+
+* Connect to recorder
+* Display capture status
+* Import sessions
+* Create Ableton artifacts
+
+# Future Features
+
+## Phase 2
+
+Rekordbox Integration
+
+Capture:
+
+* Key
+* Genre
+* Playlist
+* Rating
+* Color tags
+
+## Phase 3
+
+Audio Analysis
+
+Detect:
+
+* Phrase boundaries
+* Drops
+* Breakdowns
+* Build-ups
+
+## Phase 4
+
+Stem Reconstruction
+
+Automatically locate:
+
+* Original files
+* Stems
+* Sample packs
+
+Build remix-ready projects.
+
+## Phase 5
+
+Visual Show Sync
+
+Export timeline to:
+
+* Resolume
+* TouchDesigner
+* OBS
+
+# Success Metrics
+
+Import Success Rate:
+
+> 95%
+
+Event Accuracy:
+
+> 99%
+
+Timeline Accuracy:
+
+> 98%
+
+Session Reconstruction Time:
+<30 seconds
+
+Ableton Import Time:
+<10 seconds
+
+# Commercial Opportunities
+
+Tier 1
+
+Solo DJs
+
+Tier 2
+
+Professional touring artists
+
+Tier 3
+
+Festivals
+
+Tier 4
+
+Education
+
+Tier 5
+
+Broadcast and streaming production
