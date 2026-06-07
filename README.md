@@ -72,10 +72,34 @@ Both sources feed the same `EventStore`. The poller always runs; prolink-connect
 
 ### Event pipeline
 
-```
-prolink-connect listener  ──┐
-                             ├──► EventStore ──► Dispatcher ──► AbletonWriter  (writes to Live)
-Beat Link API poller      ──┘                               └──► ViewBridge    (SSE → status dialog)
+```mermaid
+graph LR
+    subgraph Pioneer["Pioneer Network (UDP)"]
+        CDJ["CDJ/XDJ\ndecks"]
+    end
+
+    subgraph Sources["Event Sources"]
+        PL["prolink-connect\nlistener"]
+        BL["Beat Link API\npoller (200 ms)"]
+    end
+
+    subgraph Core["Core"]
+        ES["EventStore\n(append-only log)"]
+        D["Dispatcher\n(stateful router)"]
+    end
+
+    subgraph Output["Output"]
+        AW["AbletonWriter\nMIDI clips + cue points"]
+        VB["ViewBridge\nSSE → status dialog"]
+    end
+
+    CDJ -- "UDP status packets" --> PL
+    CDJ -- "HTTP /params.json\n(via Beat Link API)" --> BL
+    PL --> ES
+    BL --> ES
+    ES --> D
+    D --> AW
+    D --> VB
 ```
 
 - **`EventStore`** — append-only in-memory log of `ProLinkEvent` values; flushes to JSON on stop.
@@ -83,9 +107,51 @@ Beat Link API poller      ──┘                               └──► V
 - **`AbletonWriter`** — converts wall-clock timestamps to Ableton beat positions, then creates/renames/finalizes MIDI clips and cue points via the Extensions SDK.
 - **`ViewBridge`** — runs a local SSE HTTP server (random port), injects the port into the status dialog HTML, and resolves the stop promise when the dialog closes.
 
+### Session lifecycle
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant E as Extension
+    participant BL as Beat Link API
+    participant PL as prolink-connect
+    participant AS as Ableton Song
+
+    U->>E: Right-click → Start Capture
+    E->>BL: Launch JAR if not running
+    E->>PL: bringOnline() + connect()
+    Note over PL: Falls back to BL-only<br/>if UDP ports occupied
+    E->>AS: createMidiTrack() × 2<br/>(Deck 1, Deck 2)
+    E->>U: Status dialog opens
+
+    loop During set
+        BL-->>E: /params.json poll
+        PL-->>E: CDJ status packets
+        E->>AS: clips, cue points, tempo
+        E->>U: SSE state update
+    end
+
+    U->>E: Stop Capture
+    E->>AS: Finalize open clips
+    E->>E: Flush EventStore → JSON
+    E->>U: Dialog closes
+```
+
 ### Timing model
 
 All timestamps are wall-clock milliseconds (`Date.now()`). `src/utils/timing.ts` converts them to Ableton beats using the master BPM at capture start. Beat position updates as the master BPM changes.
+
+### Ableton artifacts produced
+
+| Event | Ableton artifact |
+|---|---|
+| `SESSION_START` | Two MIDI tracks: "Deck 1", "Deck 2" |
+| `ON_AIR_START` | MIDI clip created; cue point `▶ D1: Artist – Title` |
+| `ON_AIR_END` | Clip resized to actual duration; cue point `■ D1` |
+| `TRACK_METADATA` | Clip renamed if name was provisional |
+| `BPM_CHANGE` (master) | `song.tempo` updated |
+| `LOOP_ENTER` / `LOOP_EXIT` | Cue points `↺ Loop D1` / `↺ Loop End D1` |
+| Hot cues (from metadata) | Cue points `D1 Hot Cue A/B/…` offset from clip start |
 
 ### Extension Host constraints
 
